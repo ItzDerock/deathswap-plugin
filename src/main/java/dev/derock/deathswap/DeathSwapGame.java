@@ -1,5 +1,7 @@
 package dev.derock.deathswap;
 
+import com.onarandombox.MultiverseCore.MultiverseCore;
+import com.onarandombox.MultiverseCore.api.MVWorldManager;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
@@ -46,9 +48,9 @@ public class DeathSwapGame implements Listener {
     private boolean isTeleporting = false;
 
     private BukkitTask task = null;
+    private final MultiverseCore core = (MultiverseCore) Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");;
 
     public DeathSwapGame() {
-
     }
 
     /**
@@ -107,21 +109,34 @@ public class DeathSwapGame implements Listener {
     private void generateWorld() {
         int seed = (int) (Math.random() * 1000000);
 
-        // now create a new world
-        WorldCreator wc = new WorldCreator(WORLD_NAME);
-        wc.environment(World.Environment.NORMAL);
-        wc.type(WorldType.NORMAL);
-        wc.generateStructures(true);
-        wc.seed(seed);
-        Bukkit.getServer().createWorld(wc);
+        assert core != null;
+        MVWorldManager worldManager = core.getMVWorldManager();
 
-        // now create a nether
-        WorldCreator wcNether = new WorldCreator(WORLD_NAME_NETHER);
-        wcNether.environment(World.Environment.NETHER);
-        wcNether.type(WorldType.NORMAL);
-        wcNether.generateStructures(true);
-        wcNether.seed(seed);
-        Bukkit.getServer().createWorld(wcNether);
+        if (!worldManager.isMVWorld(WORLD_NAME)) {
+            worldManager.addWorld(
+                    WORLD_NAME,
+                    World.Environment.NORMAL,
+                    null,
+                    WorldType.NORMAL,
+                    true,
+                    null
+            );
+        } else {
+            worldManager.regenWorld(WORLD_NAME, true, true, Integer.toString(seed));
+        }
+
+        if (!worldManager.isMVWorld(WORLD_NAME_NETHER)) {
+            worldManager.addWorld(
+                    WORLD_NAME_NETHER,
+                    World.Environment.NETHER,
+                    null,
+                    WorldType.NORMAL,
+                    true,
+                    null
+            );
+        } else {
+            worldManager.regenWorld(WORLD_NAME_NETHER, true, true, Integer.toString(seed));
+        }
     }
 
     /**
@@ -266,41 +281,13 @@ public class DeathSwapGame implements Listener {
 
         // generate the world in separate thread
         Bukkit.getScheduler().runTask(plugin, () -> {
-            World world = Bukkit.getWorld(WORLD_NAME);
-            World nether = Bukkit.getWorld(WORLD_NAME_NETHER);
-
-            Bukkit.getLogger().info("Unloading worlds");
-            unloadWorld(world);
-            unloadWorld(nether);
-
-            Bukkit.getLogger().info("Deleting worlds");
-            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                deleteWorld(world);
-                deleteWorld(nether);
-                Bukkit.getScheduler().runTask(plugin, this::generateWorld);
-            });
+            generateWorld();
+            Bukkit.getScheduler().runTaskLater(plugin, this::startGame, 20 * 5);
         });
     }
 
     public boolean isRunning() {
         return gameRunning;
-    }
-
-    @EventHandler(priority= EventPriority.HIGHEST)
-    public void onWorldInit(org.bukkit.event.world.WorldInitEvent event) {
-        if (!event.getWorld().getName().equals(DeathSwapGame.WORLD_NAME))
-            return;
-
-        event.getWorld().setKeepSpawnInMemory(false);
-        if (this.gameRunning) {
-            Bukkit.getLogger().info("Starting game");
-
-            // pregen the world
-            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                pregenerateWorld(event.getWorld());
-                Bukkit.getScheduler().runTaskLater(plugin, this::startGame, 20 * 5);
-            });
-        }
     }
 
     @EventHandler()

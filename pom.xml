@@ -79,6 +79,10 @@
             <id>papermc</id>
             <url>https://papermc.io/repo/repository/maven-public/</url>
         </repository>
+        <repository>
+            <id>OnARandomBox</id>
+            <url>https://repo.onarandombox.com/content/groups/public/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -102,6 +106,13 @@
             <artifactId>paperlib</artifactId>
             <version>1.0.7</version>
             <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.onarandombox.multiverseCore</groupId> <!-- Don't forget to replace this -->
+            <artifactId>Multiverse-Core</artifactId> <!-- Replace this as well -->
+            <version>4.3.12</version> <!-- This too -->
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>

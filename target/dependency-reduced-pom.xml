@@ -57,6 +57,10 @@
       <id>papermc</id>
       <url>https://papermc.io/repo/repository/maven-public/</url>
     </repository>
+    <repository>
+      <id>OnARandomBox</id>
+      <url>https://repo.onarandombox.com/content/groups/public/</url>
+    </repository>
   </repositories>
   <pluginRepositories>
     <pluginRepository>
@@ -69,6 +73,12 @@
       <groupId>org.spigotmc</groupId>
       <artifactId>spigot-api</artifactId>
       <version>1.20.2-R0.1-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.onarandombox.multiverseCore</groupId>
+      <artifactId>Multiverse-Core</artifactId>
+      <version>4.3.12</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
